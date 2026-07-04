@@ -1,0 +1,10 @@
+# Normalize line endings. Shell scripts and configs run on Linux hosts,
+# so they must use LF even when edited on Windows (CRLF breaks `#!/bin/bash`).
+* text=auto
+
+*.sh   text eol=lf
+*.bash text eol=lf
+*.yaml text eol=lf
+*.yml  text eol=lf
+*.json text eol=lf
+*.env  text eol=lf
