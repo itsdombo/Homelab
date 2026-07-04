@@ -1,0 +1,4 @@
+# Never commit real secrets — only the example template
+.env
+.env.*
+!.env.example
