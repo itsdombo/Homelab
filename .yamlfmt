@@ -1,0 +1,7 @@
+# yamlfmt config — https://github.com/google/yamlfmt
+# Force LF so formatting is identical on Windows and on Linux CI runners.
+line_ending: lf
+formatter:
+  type: basic
+  # Keep intentional blank lines between sections (compose files, etc.).
+  retain_line_breaks: true
