@@ -1,0 +1,11 @@
+name: homelab-pve2
+
+# What runs on pve2 (the Docker LXC).
+# Each line pulls in one self-contained service from ../../services/.
+# Add a line to deploy a service here; remove it to stop deploying it.
+include:
+  - ../../services/portainer/compose.yaml
+  - ../../services/uptime-kuma/compose.yaml
+  # Media/photo services live here later, e.g.:
+  # - ../../services/jellyfin/compose.yaml
+  # - ../../services/immich/compose.yaml

@@ -1,0 +1,8 @@
+name: homelab-pve1
+
+# What runs on pve1.
+# NOTE: this assumes pve1 has a Docker host reachable as HOMELAB_HOST=pve1.
+# Left as a template — uncomment services once pve1's Docker host exists.
+include: []
+  # - ../../services/uptime-kuma/compose.yaml
+  # - ../../services/some-pve1-only-service/compose.yaml
