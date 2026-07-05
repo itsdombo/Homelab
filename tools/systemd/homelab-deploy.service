@@ -1,0 +1,11 @@
+[Unit]
+Description=Homelab GitOps reconcile (pull repo + docker compose up)
+Wants=network-online.target docker.service
+After=network-online.target docker.service
+
+[Service]
+Type=oneshot
+# Set this per machine — it selects which hosts/<name>/ dir to deploy.
+Environment=HOMELAB_HOST=pve2
+Environment=HOMELAB_REPO_DIR=/opt/homelab
+ExecStart=/opt/homelab/tools/deploy.sh

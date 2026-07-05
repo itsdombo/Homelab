@@ -1,0 +1,10 @@
+[Unit]
+Description=Run the homelab GitOps reconcile on a schedule
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=2min
+Persistent=true
+
+[Install]
+WantedBy=timers.target
