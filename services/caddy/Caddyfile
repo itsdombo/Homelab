@@ -1,0 +1,33 @@
+# Homelab reverse proxy.
+#
+# TLS certificates come from Let's Encrypt via the Cloudflare DNS-01 challenge,
+# so nothing needs to be exposed to the internet on ports 80/443. Clients reach
+# Caddy over the LAN or tailnet; Caddy proves domain control through Cloudflare's
+# API using the token below.
+#
+# Required env (from hosts/<label>/.env, passed in by compose):
+#   ACME_EMAIL            contact address for the Let's Encrypt account
+#   CLOUDFLARE_API_TOKEN  scoped token, Zone:DNS:Edit on dominicrousseau.com
+#
+# Backends are reached by Docker service name because every include:'d service
+# on a host shares one Compose project network (uptime-kuma, portainer, caddy).
+
+{
+	email {env.ACME_EMAIL}
+	acme_dns cloudflare {env.CLOUDFLARE_API_TOKEN}
+}
+
+kuma.dominicrousseau.com {
+	reverse_proxy uptime-kuma:3001
+}
+
+portainer.dominicrousseau.com {
+	# Portainer serves HTTPS on 9443 with its own self-signed cert, so tell Caddy
+	# to trust the upstream. (Simpler alternative: proxy to http://portainer:9000
+	# and delete the transport block, if Portainer's HTTP port stays enabled.)
+	reverse_proxy https://portainer:9443 {
+		transport http {
+			tls_insecure_skip_verify
+		}
+	}
+}
