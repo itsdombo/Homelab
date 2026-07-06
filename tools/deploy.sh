@@ -29,16 +29,16 @@ COMPOSE_FILE="$HOST_DIR/compose.yaml"
 ENV_FILE="$HOST_DIR/.env"
 
 if [ ! -f "$COMPOSE_FILE" ]; then
-  echo "No compose file for host '$HOST' ($COMPOSE_FILE) — nothing to deploy." >&2
-  exit 0
+    echo "No compose file for '$HOST' ($COMPOSE_FILE); skipping." >&2
+    exit 0
 fi
 if [ ! -f "$ENV_FILE" ]; then
-  echo "Missing $ENV_FILE — copy $HOST_DIR/.env.example to .env and fill it in." >&2
-  exit 1
+    echo "Missing $ENV_FILE; copy $HOST_DIR/.env.example to it." >&2
+    exit 1
 fi
 
 compose() {
-  docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" "$@"
+    docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" "$@"
 }
 
 # 2. Pull newer images (honours the tag you pinned in each service) and
