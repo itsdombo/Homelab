@@ -6,7 +6,7 @@ services:
     image: louislam/uptime-kuma:1
     restart: always
     volumes:
-      - data:/app/data
+      - uptime_kuma_data:/app/data
     ports:
       # Web UI. Visit http://<host-ip>:3001
       - 3001:3001
@@ -14,5 +14,5 @@ services:
       TZ: ${TIMEZONE:-UTC}
 
 volumes:
-  data:
+  uptime_kuma_data:
     name: uptime_kuma_data
