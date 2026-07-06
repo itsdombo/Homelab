@@ -1,48 +1,48 @@
 # Self-Hosted Services
 
-Each folder here is one service, defined by a `compose.yaml` file. Shared
-configuration and secrets live in a single `.env` file in this directory.
+Each folder here is one service, defined by a self-contained `compose.yaml`.
+A service file describes only *how* that service runs, never where. Placement
+lives in [`hosts/`](../hosts/README.md).
 
-## First-time setup
+## How these actually deploy
 
-Create your `.env` from the template and fill it in:
+In normal operation you do **not** run these by hand. Each Docker host runs
+`tools/deploy.sh` on a systemd timer, which reconciles the host's stack from
+`hosts/<label>/compose.yaml`. Environment variables come from
+`hosts/<label>/.env` (loaded via `--env-file`), not from this directory. See
+[`hosts/README.md`](../hosts/README.md) and
+[`tools/systemd/README.md`](../tools/systemd/README.md).
+
+## One-off manual runs (testing)
+
+You can still bring a single service up by hand to test it. From inside its
+folder:
 
 ```sh
-cp .env.example .env
-# edit .env and set the values
-```
-
-## Start a service
-
-From inside a service's folder (e.g. `services/portainer/`):
-
-```sh
+cd services/uptime-kuma
 docker compose up -d
 ```
 
-The `-d` runs it in the background. Compose automatically reads the `.env`
-file in this `services/` directory.
+If the service interpolates host variables (e.g. `${TIMEZONE}`), point Compose
+at a host env file so they resolve:
 
-## Stop a service
+```sh
+docker compose --env-file ../../hosts/pve2/.env up -d
+```
+
+Stop it again with:
 
 ```sh
 docker compose down
 ```
 
-## Update a service to the latest image
+## Update a service to a newer image
 
 ```sh
-docker compose pull      # download newer images
-docker compose up -d     # recreate containers using them
-docker image prune -f    # clean up the old images
+docker compose pull      # download a newer image per the pinned tag
+docker compose up -d     # recreate the container using it
+docker image prune -f    # reclaim disk from the old image
 ```
 
-## Start everything at once (optional)
-
-Once you have several services, this brings them all up in one go:
-
-```sh
-for dir in */; do
-  [ -f "$dir/compose.yaml" ] && (cd "$dir" && docker compose up -d)
-done
-```
+The automated deploy does exactly this on every reconcile, so manual updates
+are only for testing.
