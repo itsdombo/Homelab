@@ -28,6 +28,9 @@ the systemd unit, never from `$(hostname)`.
 ```
 Homelab/
 ├── services/                  # HOW: one self-contained service per folder
+│   ├── bookorbit/             # ebook library (see its README for operations)
+│   ├── caddy/                 # reverse proxy, TLS via Cloudflare DNS-01
+│   ├── cloudflared/           # Cloudflare Tunnel connector (remote access)
 │   ├── portainer/             # container management UI (observe-only)
 │   └── uptime-kuma/           # uptime / status monitoring
 ├── hosts/                     # WHAT: placement, one folder per Docker host

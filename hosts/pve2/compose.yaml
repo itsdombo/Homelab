@@ -4,7 +4,9 @@ name: homelab-pve2
 # Each line pulls in one self-contained service from ../../services/.
 # Add a line to deploy a service here; remove it to stop deploying it.
 include:
+  - ../../services/bookorbit/compose.yaml
   - ../../services/caddy/compose.yaml
+  - ../../services/cloudflared/compose.yaml
   - ../../services/portainer/compose.yaml
   - ../../services/uptime-kuma/compose.yaml
   # Media/photo services live here later, e.g.:
