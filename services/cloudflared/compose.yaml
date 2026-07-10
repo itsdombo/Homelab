@@ -1,0 +1,23 @@
+name: cloudflared
+
+# Cloudflare Tunnel connector: an outbound-only link from this host to
+# Cloudflare's edge, so selected services are reachable from the internet
+# without opening any inbound ports (and without Tailscale).
+#
+# This is a token-managed tunnel: the ingress rules (public hostnames) live
+# in the Cloudflare Zero Trust dashboard, not in this repo. Point every
+# public hostname at Caddy (https://caddy:443 with the Origin Server Name set
+# to the hostname) — never directly at an app container, or whatever Caddy
+# enforces there (e.g. Basic Auth on books.*) is bypassed.
+#
+# Required env (from hosts/<label>/.env, passed in by compose):
+#   CLOUDFLARE_TUNNEL_TOKEN  connector token, Zero Trust → Networks → Tunnels
+
+services:
+  cloudflared:
+    container_name: cloudflared
+    image: cloudflare/cloudflared:latest
+    restart: always
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN}

@@ -20,6 +20,8 @@ services:
     environment:
       ACME_EMAIL: ${ACME_EMAIL}
       CLOUDFLARE_API_TOKEN: ${CLOUDFLARE_API_TOKEN}
+      # bcrypt hash for the books.* Basic Auth (see Caddyfile), kept out of git.
+      BOOKORBIT_BASIC_AUTH_HASH: ${BOOKORBIT_BASIC_AUTH_HASH}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       # Persist issued certs + the ACME account. Losing this re-issues on every

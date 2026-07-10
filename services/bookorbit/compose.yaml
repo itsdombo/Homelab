@@ -1,0 +1,104 @@
+name: bookorbit
+
+# BookOrbit ebook library (app + Postgres). See ./README.md for day-to-day
+# operations: Book Dock ingestion, the KOReader plugin, credential rotation,
+# and the two-part backup story.
+#
+# The app is reached only through Caddy (https://books.dominicrousseau.com,
+# Basic Auth) — it deliberately publishes no host ports, so the auth in front
+# of it cannot be bypassed from the LAN.
+#
+# Required env (from hosts/<label>/.env, passed in by compose):
+#   BOOKORBIT_POSTGRES_PASSWORD      openssl rand -hex 24
+#   BOOKORBIT_JWT_SECRET             openssl rand -hex 32
+#   BOOKORBIT_SETUP_BOOTSTRAP_TOKEN  openssl rand -hex 16; blank after setup
+#   BOOKORBIT_APP_URL                public URL, e.g. https://books.dominicrousseau.com
+#   BOOKORBIT_BOOKS_PATH             local (LXC) dir holding the library
+#   BOOKORBIT_DOCK_PATH              separate local dir watched by Book Dock
+#   PUID / PGID                      uid/gid owning the two dirs above
+
+services:
+  bookorbit:
+    container_name: bookorbit
+    # Exact-version pin: upstream publishes no major tags (no :2), so updates
+    # are manual — bump this tag and push. The tag you pin is the update policy.
+    image: ghcr.io/bookorbit/bookorbit:2.1.0
+    restart: always
+    init: true
+    environment:
+      TZ: ${TIMEZONE:-UTC}
+      NODE_ENV: production
+      PORT: "3000"
+      POSTGRES_HOST: bookorbit-db
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: bookorbit
+      POSTGRES_DB: bookorbit
+      POSTGRES_PASSWORD: ${BOOKORBIT_POSTGRES_PASSWORD}
+      JWT_SECRET: ${BOOKORBIT_JWT_SECRET}
+      # Only consumed by the first-run setup wizard; blank it in .env afterwards.
+      SETUP_BOOTSTRAP_TOKEN: ${BOOKORBIT_SETUP_BOOTSTRAP_TOKEN:-}
+      APP_URL: ${BOOKORBIT_APP_URL}
+      PUID: ${PUID:-1000}
+      PGID: ${PGID:-1000}
+      # Container-side path of the Book Dock watched folder (mounted below).
+      BOOK_DOCK_PATH: /dock
+    depends_on:
+      bookorbit-db:
+        condition: service_healthy
+    volumes:
+      - ${BOOKORBIT_BOOKS_PATH}:/books
+      - ${BOOKORBIT_DOCK_PATH}:/dock
+      - bookorbit_app_data:/data
+    # Hardening kept from upstream's reference compose.
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
+      - SETGID
+      - SETUID
+    security_opt:
+      - no-new-privileges:true
+    stop_grace_period: 30s
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "const p=process.env.PORT||3000;fetch('http://127.0.0.1:'+p+'/api/v1/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  bookorbit-db:
+    container_name: bookorbit-db
+    image: pgvector/pgvector:pg18
+    restart: always
+    environment:
+      TZ: ${TIMEZONE:-UTC}
+      POSTGRES_USER: bookorbit
+      POSTGRES_DB: bookorbit
+      POSTGRES_PASSWORD: ${BOOKORBIT_POSTGRES_PASSWORD}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - bookorbit_db_data:/var/lib/postgresql/data
+    healthcheck:
+      # $$ stops compose interpolating; the container's shell expands these.
+      test:
+        - CMD-SHELL
+        - pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+volumes:
+  bookorbit_app_data:
+    name: bookorbit_app_data
+  bookorbit_db_data:
+    name: bookorbit_db_data
