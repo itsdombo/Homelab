@@ -39,10 +39,16 @@ books.dominicrousseau.com {
 	# `caddy hash-password` via the env, so no credential — not even a hash —
 	# is committed to this public repo.
 	#
-	# /topbar.png is exempt: BookOrbit's frontend fetches it anonymously
-	# (crossorigin, no Authorization header), so a 401 on it re-triggers the
-	# browser's Basic Auth popup on every page load even when logged in.
-	@protected not path /topbar.png
+	# Two exemptions, or the app cannot function behind Basic Auth:
+	#  - /api/*: the frontend (and the KOReader plugin) send their own
+	#    `Authorization: Bearer <jwt>` header on API calls, which replaces the
+	#    Basic credentials — Caddy would 401 every API request the moment a
+	#    user logs in. The API enforces BookOrbit's own auth on every route.
+	#  - static assets: fetched anonymously (crossorigin, no Authorization),
+	#    and a 401 on any re-triggers the browser's auth popup on every page
+	#    load (seen with /topbar.png, /theme-init.js). App code and branding
+	#    only, no user data.
+	@protected not path /api/* *.js *.css *.png *.jpg *.svg *.ico *.woff *.woff2 *.map
 	basic_auth @protected {
 		dominic {env.BOOKORBIT_BASIC_AUTH_HASH}
 	}

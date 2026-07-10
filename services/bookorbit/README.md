@@ -4,7 +4,13 @@ Self-hosted ebook library: a Node app plus a Postgres (pgvector) database.
 Reachable at `https://books.dominicrousseau.com`, published to the internet
 through the Cloudflare Tunnel (`services/cloudflared/`) and password-protected
 with HTTP Basic Auth at Caddy. The app container publishes no host ports, so
-there is no path around the Basic Auth.
+there is no path around Caddy.
+
+Basic Auth covers the pages; `/api/*` and static assets are exempt (see the
+Caddyfile for why — the frontend's own `Authorization: Bearer` header would
+otherwise clobber the Basic credentials and 401 every API call). The API is
+still protected on every route by BookOrbit's own JWT/KOReader auth; Basic
+Auth is the extra gate on the UI against scanners and drive-by logins.
 
 Config comes from `hosts/<label>/.env` — see the `BOOKORBIT_*` block in
 [`hosts/pve2/.env.example`](../../hosts/pve2/.env.example).
@@ -41,23 +47,12 @@ two-way progress and annotation sync. This is richer than plain OPDS.
 3. On the device: **Tools → BookOrbit Sync** for the catalog browser,
    downloads, and manual/automatic sync.
 
-**Basic Auth caveat:** the plugin authenticates with its own KOReader
-credentials, so Caddy's whole-site Basic Auth may 401 the device before
-requests reach the app. If sync fails with auth errors, exempt only the
-KOReader API from Basic Auth in the Caddyfile (those endpoints still require
-the KOReader account credentials):
-
-```caddyfile
-books.dominicrousseau.com {
-	# Verify the real path prefix first, e.g. from the Caddy logs while the
-	# device syncs; /api/v1/koreader/* is the expected shape.
-	@koreader path /api/v1/koreader/*
-	basic_auth not @koreader {
-		dominic {env.BOOKORBIT_BASIC_AUTH_HASH}
-	}
-	reverse_proxy bookorbit:3000
-}
-```
+**Basic Auth note:** the plugin talks to `/api/*` with its own KOReader
+credentials, and that whole path is already exempt from Caddy's Basic Auth
+(the exemption the web frontend itself requires — see the Caddyfile), so the
+plugin works without extra configuration. If the device ever gets auth
+errors, check whether it is requesting a path outside `/api/` and extend the
+`@protected` matcher's exemption list accordingly.
 
 ## Rotating credentials
 
