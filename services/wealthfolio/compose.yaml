@@ -1,0 +1,36 @@
+name: wealthfolio
+
+# Wealthfolio investment/portfolio tracker (single container, SQLite).
+# Reached only through Caddy (https://money.dominicrousseau.com) — it
+# deliberately publishes no host ports. Tailnet/LAN-only: no Cloudflare
+# Tunnel public hostname for this app.
+#
+# Required env (from hosts/<label>/.env, passed in by compose):
+#   WEALTHFOLIO_SECRET_KEY          openssl rand -base64 32 — BACK THIS UP;
+#                                   losing it loses all encrypted secrets
+#   WEALTHFOLIO_AUTH_PASSWORD_HASH  Argon2id PHC hash of the login password
+
+services:
+  wealthfolio:
+    container_name: wealthfolio
+    # Exact-version pin, same policy as bookorbit: bump the tag and push.
+    image: wealthfolio/wealthfolio:3.6.1
+    restart: always
+    environment:
+      TZ: ${TIMEZONE:-UTC}
+      WF_LISTEN_ADDR: 0.0.0.0:8088
+      WF_DB_PATH: /data/wealthfolio.db
+      WF_SECRET_KEY: ${WEALTHFOLIO_SECRET_KEY}
+      WF_AUTH_PASSWORD_HASH: ${WEALTHFOLIO_AUTH_PASSWORD_HASH}
+      # Must match the browser URL exactly (scheme + host + port).
+      WF_CORS_ALLOW_ORIGINS: https://money.dominicrousseau.com
+      # TLS terminates at Caddy; the app itself only sees plain HTTP.
+      WF_COOKIE_SECURE: "true"
+    volumes:
+      - wealthfolio_data:/data
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  wealthfolio_data:
+    name: wealthfolio_data

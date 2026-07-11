@@ -9,6 +9,7 @@ include:
   - ../../services/cloudflared/compose.yaml
   - ../../services/portainer/compose.yaml
   - ../../services/uptime-kuma/compose.yaml
+  - ../../services/wealthfolio/compose.yaml
   # Media/photo services live here later, e.g.:
   # - ../../services/jellyfin/compose.yaml
   # - ../../services/immich/compose.yaml

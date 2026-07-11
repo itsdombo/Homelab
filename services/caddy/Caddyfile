@@ -54,3 +54,11 @@ books.dominicrousseau.com {
 	}
 	reverse_proxy bookorbit:3000
 }
+
+money.dominicrousseau.com {
+	# Wealthfolio. Tailnet/LAN-only — no Tunnel hostname, so this never sees
+	# the internet. Auth is the app's own password login (Argon2id), so no
+	# Basic Auth here; adding it would break the app's Bearer-token API calls
+	# the same way it would BookOrbit's (see above).
+	reverse_proxy wealthfolio:8088
+}
