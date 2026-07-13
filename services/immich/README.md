@@ -22,17 +22,22 @@ Config comes from `hosts/<label>/.env` — see the `IMMICH_*` block in
 
 Everything file-shaped — originals, thumbnails, transcodes, and Immich's
 built-in database dumps — lives under one host directory,
-`IMMICH_LIBRARY_PATH` (`/srv/immich/library`), mounted at `/data` in the
-server container. Create it **before** the first deploy:
+`IMMICH_LIBRARY_PATH` (`/mnt/photos/library` on pve2), mounted at `/data` in
+the server container. `/mnt/photos` is the `tank/photos` ZFS dataset (the
+HDD pool), mounted into the LXC by the Proxmox node — not the SSD-backed
+rootfs, which stays free for the OS, images, and the database. Create the
+subdir **before** the first deploy:
 
 ```sh
-sudo mkdir -p /srv/immich/library
-sudo chown deploy:deploy /srv/immich/library
+sudo mkdir -p /mnt/photos/library
+sudo chown deploy:deploy /mnt/photos/library
 ```
 
 Postgres data (`immich_db_data`) and the ML model cache
-(`immich_model_cache`) are named volumes. The model cache is disposable —
-deleting it just re-downloads the models (~500 MB) on the next job.
+(`immich_model_cache`) are named volumes on the rootfs (SSD) — deliberately,
+since Immich recommends keeping the database on fast storage. The model
+cache is disposable — deleting it just re-downloads the models (~500 MB) on
+the next job.
 
 ## First-run setup
 
@@ -88,7 +93,7 @@ Like BookOrbit, state is split, and both halves are needed for a restore:
 1. **Files:** the library dir (`IMMICH_LIBRARY_PATH`). Backing up the whole
    dir also captures the built-in DB dumps below.
 2. **Database:** Immich dumps its own database nightly to
-   `/srv/immich/library/backups/` — verify it is enabled under
+   `/mnt/photos/library/backups/` — verify it is enabled under
    **Administration → Settings → Backup Settings**. Manual dump:
 
    ```sh
