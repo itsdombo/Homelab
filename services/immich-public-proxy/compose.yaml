@@ -1,0 +1,42 @@
+name: immich-public-proxy
+
+# Immich Public Proxy (IPP): the ONLY internet-facing window into the photo
+# library. Published through the Cloudflare Tunnel (cloudflared ->
+# https://caddy:443) at https://gallery.dominicrousseau.com. It holds no
+# Immich API key and can only serve albums/photos that were explicitly shared
+# from Immich — every other path 404s — which is why it carries no Basic
+# Auth: share links must work for anyone who receives one.
+#
+# Talks to Immich at http://immich-server:2283 over the shared project
+# network, so services/immich/ must be included on the same host. (No
+# depends_on: include files are validated standalone and cannot reference
+# each other's services; IPP just errors until Immich is up.) Operations are
+# documented in ../immich/README.md.
+#
+# Required env (from hosts/<label>/.env, passed in by compose): none — both
+# URLs below are fixed properties of this homelab, not secrets.
+
+services:
+  immich-public-proxy:
+    container_name: immich-public-proxy
+    # Exact-version pin: updates are manual — bump the tag and push.
+    image: alangrainger/immich-public-proxy:3.0.1
+    restart: always
+    environment:
+      TZ: ${TIMEZONE:-UTC}
+      # Internal URL only — reaches the server directly over the project
+      # network, never back out through the public hostname.
+      IMMICH_URL: http://immich-server:2283
+      PUBLIC_BASE_URL: https://gallery.dominicrousseau.com
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      # Endpoint and command from upstream's reference compose (curl is in
+      # the image).
+      test:
+        - CMD-SHELL
+        - curl -s http://localhost:3000/share/healthcheck -o /dev/null || exit 1
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s

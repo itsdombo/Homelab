@@ -1,0 +1,115 @@
+name: immich
+
+# Immich photo/video library: server + machine learning (CPU-only) + Valkey
+# + Postgres. See ./README.md for operations: first-run setup, credential
+# rotation, and the two-part backup story (library files + database dump).
+#
+# The app is reached only through Caddy (https://photos.dominicrousseau.com,
+# tailnet/LAN-only — no Tunnel hostname) and publishes no host ports. Auth is
+# Immich's own login (web + mobile apps), so no Basic Auth at Caddy. Public
+# sharing is the separate services/immich-public-proxy/ service; this stack
+# itself never faces the internet.
+#
+# Required env (from hosts/<label>/.env, passed in by compose):
+#   IMMICH_DB_PASSWORD   openssl rand -hex 24 (keep it alphanumeric)
+#   IMMICH_LIBRARY_PATH  local (LXC) dir for originals, thumbnails, and
+#                        Immich's built-in DB dumps; create before deploy
+
+services:
+  immich-server:
+    container_name: immich-server
+    # Exact-version pin: updates are manual — bump the tag and push. Read the
+    # release notes first (Immich ships breaking changes) and keep this tag
+    # in lockstep with immich-machine-learning below.
+    image: ghcr.io/immich-app/immich-server:v3.0.2
+    restart: always
+    environment:
+      TZ: ${TIMEZONE:-UTC}
+      DB_HOSTNAME: immich-db
+      DB_USERNAME: immich
+      DB_DATABASE_NAME: immich
+      DB_PASSWORD: ${IMMICH_DB_PASSWORD}
+      REDIS_HOSTNAME: immich-redis
+    volumes:
+      # Originals, thumbnails, transcodes, and built-in DB dumps all live here.
+      - ${IMMICH_LIBRARY_PATH}:/data
+    depends_on:
+      immich-redis:
+        condition: service_healthy
+      immich-db:
+        condition: service_healthy
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      # The image ships its own healthcheck; this keeps it enabled (upstream's
+      # release compose does the same).
+      disable: false
+
+  immich-machine-learning:
+    container_name: immich-machine-learning
+    # CPU-only image (no GPU in this unprivileged LXC). The server finds it at
+    # http://immich-machine-learning:3003, the built-in default. Keep the tag
+    # in lockstep with immich-server above.
+    image: ghcr.io/immich-app/immich-machine-learning:v3.0.2
+    restart: always
+    environment:
+      TZ: ${TIMEZONE:-UTC}
+    volumes:
+      # Downloaded CLIP / facial-recognition models. Disposable cache — safe
+      # to delete; the next job re-downloads (~500 MB).
+      - immich_model_cache:/cache
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      disable: false
+
+  immich-redis:
+    container_name: immich-redis
+    # Digest pin verbatim from Immich's release compose; only bump it when
+    # bumping the Immich tags above.
+    image: docker.io/valkey/valkey:9@sha256:4963247afc4cd33c7d3b2d2816b9f7f8eeebab148d29056c2ca4d7cbc966f2d9
+    restart: always
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - redis-cli ping || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  immich-db:
+    container_name: immich-db
+    # Immich's own Postgres build (VectorChord); digest pin verbatim from the
+    # release compose. Only ever bump it together with the Immich tags, per
+    # the release notes.
+    image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23
+    restart: always
+    environment:
+      TZ: ${TIMEZONE:-UTC}
+      POSTGRES_USER: immich
+      POSTGRES_DB: immich
+      POSTGRES_PASSWORD: ${IMMICH_DB_PASSWORD}
+      POSTGRES_INITDB_ARGS: --data-checksums
+    volumes:
+      - immich_db_data:/var/lib/postgresql/data
+    shm_size: 128mb
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      # $$ stops compose interpolating; the container's shell expands these.
+      test:
+        - CMD-SHELL
+        - pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+volumes:
+  immich_model_cache:
+    name: immich_model_cache
+  immich_db_data:
+    name: immich_db_data

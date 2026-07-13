@@ -62,3 +62,23 @@ money.dominicrousseau.com {
 	# the same way it would BookOrbit's (see above).
 	reverse_proxy wealthfolio:8088
 }
+
+photos.dominicrousseau.com {
+	# Immich. Tailnet/LAN-only — no Tunnel hostname, so this never sees the
+	# internet (and no Cloudflare 100 MB upload cap applies). Auth is Immich's
+	# own login; no Basic Auth here — the web and mobile apps send their own
+	# `Authorization: Bearer` headers, which Basic Auth would break the same
+	# way it would BookOrbit's (see books.* above). Caddy has no default
+	# request-body limit or proxy timeouts, so large uploads and the app's
+	# websocket connection need no extra config.
+	reverse_proxy immich-server:2283
+}
+
+gallery.dominicrousseau.com {
+	# Immich Public Proxy — the only public window into the photo library,
+	# published to the internet through the Cloudflare Tunnel (cloudflared ->
+	# https://caddy:443). Deliberately no Basic Auth: it can only serve what
+	# was explicitly shared from Immich (it holds no API key; everything else
+	# 404s), and share links must work for anyone who receives one.
+	reverse_proxy immich-public-proxy:3000
+}

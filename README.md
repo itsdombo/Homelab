@@ -31,8 +31,11 @@ Homelab/
 │   ├── bookorbit/             # ebook library (see its README for operations)
 │   ├── caddy/                 # reverse proxy, TLS via Cloudflare DNS-01
 │   ├── cloudflared/           # Cloudflare Tunnel connector (remote access)
+│   ├── immich/                # photo library (see its README for operations)
+│   ├── immich-public-proxy/   # public share gallery for Immich (internet-facing)
 │   ├── portainer/             # container management UI (observe-only)
-│   └── uptime-kuma/           # uptime / status monitoring
+│   ├── uptime-kuma/           # uptime / status monitoring
+│   └── wealthfolio/           # investment tracker (see its README for operations)
 ├── hosts/                     # WHAT: placement, one folder per Docker host
 │   ├── pve1/                  # compose.yaml (include:) + .env.example
 │   └── pve2/                  # compose.yaml (include:) + .env.example

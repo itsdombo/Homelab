@@ -7,9 +7,10 @@ include:
   - ../../services/bookorbit/compose.yaml
   - ../../services/caddy/compose.yaml
   - ../../services/cloudflared/compose.yaml
+  - ../../services/immich/compose.yaml
+  - ../../services/immich-public-proxy/compose.yaml
   - ../../services/portainer/compose.yaml
   - ../../services/uptime-kuma/compose.yaml
   - ../../services/wealthfolio/compose.yaml
-  # Media/photo services live here later, e.g.:
+  # Media services live here later, e.g.:
   # - ../../services/jellyfin/compose.yaml
-  # - ../../services/immich/compose.yaml
