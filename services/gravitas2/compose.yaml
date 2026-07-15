@@ -29,8 +29,11 @@ services:
       TYPE: AUTO_CURSEFORGE
       CF_API_KEY: ${CF_API_KEY}
       CF_SLUG: all-the-mods-gravitas2
-      # File 7948149 = modpack version 0.9.4. Bump to update the pack.
-      CF_FILE_ID: "7948149"
+      # File 7948145 = the 0.9.4 CLIENT modpack zip; AUTO_CURSEFORGE resolves
+      # its paired server pack (7948149) itself. CF_FILE_ID must be the client
+      # file — pointing it at the server pack fails with "did not contain a
+      # manifest.json". Bump to the new client file ID to update the pack.
+      CF_FILE_ID: "7948145"
       # 6G heap inside a 7G (6.9G available) container — leaves headroom for
       # the JVM's own overhead and the OS.
       MEMORY: "6G"

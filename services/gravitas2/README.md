@@ -8,9 +8,9 @@ Minecraft server running the **All The Mods - Gravitas²** CurseForge modpack,
 
 - **Modpack:** All The Mods - Gravitas², modpack version 0.9.4, installed via
   `TYPE=AUTO_CURSEFORGE` pinned to `CF_SLUG=all-the-mods-gravitas2` /
-  `CF_FILE_ID=7948149`. Requires `CF_API_KEY` in `hosts/pve1/.env` — see that
-  file's comments for the `$$`-escaping and 403 (org rename + key regen)
-  gotchas.
+  `CF_FILE_ID=7948145` (the **client** file — the installer resolves the paired
+  server pack itself). Requires `CF_API_KEY` in `hosts/pve1/.env` — see that
+  file's comments for the key-quoting and 403 (org rename + key regen) gotchas.
 - **Memory:** `6G` JVM heap in a **7G** (≈6.9G available) container — the
   remaining ~1G is headroom for JVM overhead and the OS. Do not raise `MEMORY`
   without giving the container more RAM.
