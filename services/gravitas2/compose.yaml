@@ -23,13 +23,14 @@ services:
       - "25565:25565/tcp"
     environment:
       EULA: "TRUE"
-      # Install from a locally-provided server-pack zip — no CurseForge API key
-      # needed. Download the "Server Pack" for modpack version 0.9.4 from
-      # CurseForge once and place it at /opt/appdata/gravitas2-packs/ (mounted
-      # read-only at /modpacks below); point CF_SERVER_MOD at that file.
-      # To update: drop in the new version's zip and change this filename.
-      TYPE: CURSEFORGE
-      CF_SERVER_MOD: /modpacks/gravitas2-server-0.9.4.zip
+      # AUTO_CURSEFORGE resolves and installs the server pack via CurseForge's
+      # official API. Needs CF_API_KEY from hosts/pve1/.env — see .env.example
+      # for the key gotchas ($$-escaping; org rename + key regen if 403).
+      TYPE: AUTO_CURSEFORGE
+      CF_API_KEY: ${CF_API_KEY}
+      CF_SLUG: all-the-mods-gravitas2
+      # File 7948149 = modpack version 0.9.4. Bump to update the pack.
+      CF_FILE_ID: "7948149"
       # 6G heap inside a 7G (6.9G available) container — leaves headroom for
       # the JVM's own overhead and the OS.
       MEMORY: "6G"
@@ -38,6 +39,3 @@ services:
       # World + mods on the SSD tier. Create /opt/appdata/gravitas2 before the
       # first deploy; the image populates it on first boot.
       - /opt/appdata/gravitas2:/data
-      # Manually-downloaded server-pack zip(s). Read-only: the server installs
-      # from here but never writes to it.
-      - /opt/appdata/gravitas2-packs:/modpacks:ro

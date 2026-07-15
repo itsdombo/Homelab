@@ -7,8 +7,10 @@ Minecraft server running the **All The Mods - Gravitas²** CurseForge modpack,
 ## Facts
 
 - **Modpack:** All The Mods - Gravitas², modpack version 0.9.4, installed via
-  `TYPE=CURSEFORGE` from a **locally-provided server-pack zip** — no CurseForge
-  API key. See "Installing / updating the pack" below.
+  `TYPE=AUTO_CURSEFORGE` pinned to `CF_SLUG=all-the-mods-gravitas2` /
+  `CF_FILE_ID=7948149`. Requires `CF_API_KEY` in `hosts/pve1/.env` — see that
+  file's comments for the `$$`-escaping and 403 (org rename + key regen)
+  gotchas.
 - **Memory:** `6G` JVM heap in a **7G** (≈6.9G available) container — the
   remaining ~1G is headroom for JVM overhead and the OS. Do not raise `MEMORY`
   without giving the container more RAM.
@@ -17,28 +19,11 @@ Minecraft server running the **All The Mods - Gravitas²** CurseForge modpack,
   deploy. 102G disk / ~96G free is ample for the pack.
 - **Port:** `25565/tcp` published on the host.
 
-## Installing / updating the pack
+## Updating the pack
 
-The server installs from a **server-pack zip you download once**, kept on the
-host at `/opt/appdata/gravitas2-packs/` (mounted read-only at `/modpacks`).
-`CF_SERVER_MOD` in `compose.yaml` names the file
-(`gravitas2-server-0.9.4.zip`). This avoids the CurseForge API entirely — the
-website `/download/<id>/file` URL is bot-protected (HTTP 403) and the API
-mechanism needs an account key, so a local file is the simplest reliable path.
-
-Get the zip: on the modpack's CurseForge **Files** page, open the 0.9.4 file
-and download its **Server Pack** (under "Additional Files"). The actual bytes
-come from `*.forgecdn.net`, which *is* directly fetchable — so you can grab the
-CDN link and pull it straight onto the host, e.g.:
-
-```sh
-mkdir -p /opt/appdata/gravitas2-packs
-curl -L -o /opt/appdata/gravitas2-packs/gravitas2-server-0.9.4.zip \
-  'https://mediafilez.forgecdn.net/files/7948/149/<exact-filename>.zip'
-```
-
-To update: download the new version's server pack, drop it in the same dir,
-and change `CF_SERVER_MOD` in `compose.yaml` to the new filename, then push.
+`CF_FILE_ID` in `compose.yaml` pins the modpack file (7948149 = 0.9.4). To
+update, change it to the new version's file ID on the modpack's CurseForge
+**Files** page and push.
 
 ## First boot takes several minutes
 
@@ -58,6 +43,5 @@ docker attach gravitas2      # Ctrl-p Ctrl-q to detach without stopping
 
 ## Notes
 
-- `TYPE: CURSEFORGE` with `EULA: "TRUE"` — accepting the EULA is required by
-  Mojang to run any server.
+- `EULA: "TRUE"` — accepting the EULA is required by Mojang to run any server.
 - `TZ` comes from `TIMEZONE` in `hosts/pve1/.env` (America/Vancouver).
