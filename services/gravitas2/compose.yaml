@@ -21,6 +21,9 @@ services:
     tty: true
     ports:
       - "25565:25565/tcp"
+      # Simple Voice Chat (bundled in the pack) — UDP, same default port for
+      # every player; game traffic stays on 25565/tcp.
+      - "24454:24454/udp"
     environment:
       EULA: "TRUE"
       # AUTO_CURSEFORGE resolves and installs the server pack via CurseForge's
@@ -38,9 +41,16 @@ services:
       # miscategorized but is a hard server-side dependency of TFCCaelum
       # (crash: "Mod tfccaelum requires caelum ... not installed").
       CF_FORCE_INCLUDE_MODS: caelum
-      # 6G heap inside a 7G (6.9G available) container — leaves headroom for
-      # the JVM's own overhead and the OS.
-      MEMORY: "6G"
+      # 5G heap inside a 7G container. 6G froze the box (RAM 99% + swap
+      # exhausted on first player join): the JVM's off-heap overhead for ~370
+      # mods (metaspace, threads, direct buffers) rides on top of -Xmx, so the
+      # heap must leave real headroom for it plus the OS.
+      MEMORY: "5G"
+      # Default 10/10 is too heavy for 4 cores + 7G with this pack. View is
+      # what players see (Distant Horizons fills in beyond it client-side);
+      # simulation is what actually ticks — the CPU/memory knob.
+      VIEW_DISTANCE: "6"
+      SIMULATION_DISTANCE: "6"
       # The spark mod's background profiler loads a native async-profiler lib
       # that SIGSEGVs the JVM (Java 25, unprivileged LXC) right after
       # "Starting background profiler...". Disable it; on-demand /spark
