@@ -6,8 +6,13 @@ Minecraft server running the **All The Mods - Gravitas²** CurseForge modpack,
 
 ## Facts
 
-- **Modpack:** All The Mods - Gravitas² (`CF_SERVER_MOD` pins CurseForge file
-  `7948149`), modpack version 0.9.4.
+- **Modpack:** All The Mods - Gravitas² (installed via `TYPE=AUTO_CURSEFORGE`,
+  pinned to CurseForge `CF_SLUG=all-the-mods-gravitas2` / `CF_FILE_ID=7948149`),
+  modpack version 0.9.4.
+- **CurseForge API key:** required. `AUTO_CURSEFORGE` uses the official API, so
+  set `CF_API_KEY` in `hosts/pve1/.env` (free key from
+  <https://console.curseforge.com/>). The old website-URL fetch is blocked by
+  bot protection (HTTP 403), which is why this uses the API mechanism.
 - **Memory:** `6G` JVM heap in a **7G** (≈6.9G available) container — the
   remaining ~1G is headroom for JVM overhead and the OS. Do not raise `MEMORY`
   without giving the container more RAM.

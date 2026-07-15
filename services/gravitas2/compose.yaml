@@ -23,8 +23,14 @@ services:
       - "25565:25565/tcp"
     environment:
       EULA: "TRUE"
-      TYPE: CURSEFORGE
-      CF_SERVER_MOD: https://www.curseforge.com/minecraft/modpacks/all-the-mods-gravitas2/download/7948149/file
+      # AUTO_CURSEFORGE uses CurseForge's official API (needs a free key) to
+      # resolve and install the server pack. The old TYPE=CURSEFORGE fetch of
+      # the website /download/<id>/file URL is blocked by bot protection (403).
+      TYPE: AUTO_CURSEFORGE
+      CF_API_KEY: ${CF_API_KEY}
+      CF_SLUG: all-the-mods-gravitas2
+      # File 7948149 = modpack version 0.9.4. Bump to update the pack.
+      CF_FILE_ID: "7948149"
       # 6G heap inside a 7G (6.9G available) container — leaves headroom for
       # the JVM's own overhead and the OS.
       MEMORY: "6G"
