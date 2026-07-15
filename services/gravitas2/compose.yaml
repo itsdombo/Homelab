@@ -34,6 +34,10 @@ services:
       # file — pointing it at the server pack fails with "did not contain a
       # manifest.json". Bump to the new client file ID to update the pack.
       CF_FILE_ID: "7948145"
+      # The installer skips mods it thinks are client-only; Caelum is
+      # miscategorized but is a hard server-side dependency of TFCCaelum
+      # (crash: "Mod tfccaelum requires caelum ... not installed").
+      CF_FORCE_INCLUDE_MODS: caelum
       # 6G heap inside a 7G (6.9G available) container — leaves headroom for
       # the JVM's own overhead and the OS.
       MEMORY: "6G"
