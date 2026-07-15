@@ -41,6 +41,11 @@ services:
       # 6G heap inside a 7G (6.9G available) container — leaves headroom for
       # the JVM's own overhead and the OS.
       MEMORY: "6G"
+      # The spark mod's background profiler loads a native async-profiler lib
+      # that SIGSEGVs the JVM (Java 25, unprivileged LXC) right after
+      # "Starting background profiler...". Disable it; on-demand /spark
+      # commands still work.
+      JVM_DD_OPTS: spark.backgroundProfiler=false
       TZ: ${TIMEZONE:-UTC}
     volumes:
       # World + mods on the SSD tier. Create /opt/appdata/gravitas2 before the
