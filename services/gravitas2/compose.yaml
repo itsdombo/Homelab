@@ -41,6 +41,15 @@ services:
       # miscategorized but is a hard server-side dependency of TFCCaelum
       # (crash: "Mod tfccaelum requires caelum ... not installed").
       CF_FORCE_INCLUDE_MODS: caelum
+      # Chunky (chunk pregenerator) — NOT part of the pack; extra server-side
+      # mod so worldgen can run ahead of players instead of on their login
+      # (worldgen spikes are what pushed this box into swap). Pinned to the
+      # 1.20.1 Forge build; the image manages the jar, so deleting this line
+      # also removes it. See README "Pregenerating chunks" for the kickoff.
+      CURSEFORGE_FILES: chunky-pregenerator-forge:5320028
+      # Auto-resume an interrupted pregen after a restart (crash or reconcile
+      # recreate). Harmless no-op ("no tasks") when nothing is paused.
+      RCON_CMDS_STARTUP: chunky continue
       # 5G heap inside a 7G container. 6G froze the box (RAM 99% + swap
       # exhausted on first player join): the JVM's off-heap overhead for ~370
       # mods (metaspace, threads, direct buffers) rides on top of -Xmx, so the

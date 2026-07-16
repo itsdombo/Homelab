@@ -32,6 +32,37 @@ On the **first** start the image downloads and installs the modpack — roughly
 apparent silence; watch progress with `docker logs -f gravitas2`. Subsequent
 boots reuse the installed `/opt/appdata/gravitas2` data and start quickly.
 
+## Pregenerating chunks
+
+The pack ships no pregen mod, so the compose file adds **Chunky** as an extra
+server-side mod (`CURSEFORGE_FILES: chunky-pregenerator-forge:5320028`, the
+1.20.1 Forge build). Kick off a pregen from pve1 — e.g. a 5000-block-radius
+square centered on spawn in the overworld:
+
+```sh
+docker exec gravitas2 rcon-cli chunky center 0 0
+docker exec gravitas2 rcon-cli chunky radius 5000
+docker exec gravitas2 rcon-cli chunky start
+```
+
+- **Progress:** `docker exec gravitas2 rcon-cli chunky progress` (Chunky also
+  logs progress to the server console periodically).
+- **Pause / resume:** `chunky pause` / `chunky continue` via the same
+  `rcon-cli`. `RCON_CMDS_STARTUP: chunky continue` in the compose file
+  auto-resumes an interrupted task after any restart, so a crash or reconcile
+  mid-run doesn't silently abandon the pregen.
+- **Other dimensions:** the Nether maps 1:8, so
+  `chunky world minecraft:the_nether` + `chunky radius 1250` covers the same
+  overworld-equivalent area; `chunky world minecraft:the_end` if wanted. Set
+  `world`/`radius`, then `chunky start` again (one task per dimension, run
+  them one at a time).
+- **Load:** generation saturates the 4 cores for hours (expect a few hundred
+  thousand chunks at maybe 10–25 chunks/s with this pack) and tanks TPS for
+  anyone online — run it while the server is empty. Watch RAM with
+  `docker stats gravitas2`; if the box starts swapping, `chunky pause`.
+- **Disk:** a 5000-block-radius overworld pregen lands in the ~10 GB range —
+  fine against the ~96 GB free on the SSD tier.
+
 ## Console access
 
 The container runs with `stdin_open`/`tty`, so you can attach to the live
