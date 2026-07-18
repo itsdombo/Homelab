@@ -22,7 +22,7 @@ services:
     container_name: bookorbit
     # Exact-version pin: upstream publishes no major tags (no :2), so updates
     # are manual — bump this tag and push. The tag you pin is the update policy.
-    image: ghcr.io/bookorbit/bookorbit:2.1.0
+    image: ghcr.io/bookorbit/bookorbit:2.2.0
     restart: always
     init: true
     environment:
