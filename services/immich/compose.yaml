@@ -21,7 +21,7 @@ services:
     # Exact-version pin: updates are manual — bump the tag and push. Read the
     # release notes first (Immich ships breaking changes) and keep this tag
     # in lockstep with immich-machine-learning below.
-    image: ghcr.io/immich-app/immich-server:v3.0.2
+    image: ghcr.io/immich-app/immich-server:v3.1.0
     restart: always
     environment:
       TZ: ${TIMEZONE:-UTC}
